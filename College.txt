@@ -1,0 +1,75 @@
+
+CREATE TABLE Student(Snum INT primary key,Sname VARCHAR(30),Major VARCHAR(30),Level VARCHAR(5),Age int);
+desc Student;
+CREATE TABLE Faculty(Fid INT primary key,Fname VARCHAR(20),Deptid INT);
+desc Faculty;
+CREATE TABLE Class(Cname VARCHAR(20) primary key,Meets_at VARCHAR(20),Room VARCHAR(20),Fid INT references Faculty(Fid) on delete cascade);
+desc Class;
+CREATE TABLE Enrolled(Snum INT references Student(Snum) on delete cascade,Cname VARCHAR(20) references Class(Cname) on delete cascade);
+desc Enrolled;
+
+
+INSERT INTO Student(Snum,Sname,Major,Level,Age) VALUES
+(1,'John','History','Sr',19),
+(2,'Sakhi','History','Jr',20),
+(3,'Jainandan','Maths','Sr',20),
+(4,'Tarun','History','Jr',20),
+(5,'Sid','History','Jr',20),
+(6,'Harsha','History','Sr',21);
+select * from Student;
+
+INSERT INTO Faculty(Fid,Fname,Deptid) VALUES
+(12,'Mohan',1000),
+(13,'Kumar',1001),
+(14,'Ravi',1002),
+(15,'Ram',1000);
+Select * from Faculty;
+
+INSERT INTO Class(Cname,Meets_at,Room,Fid) VALUES
+('class1','02:00 PM','r1',14),
+('class2','10:00 AM','r2',12),
+('class3','10:00 AM','r3',11),
+('class4','04:00 PM','r1',14),
+('class5','08:00 AM','r3',15),
+('class6','10:00 AM','r1',14);
+Select * from Class;
+
+insert into Enrolled(Snum,Cname) values
+(1,'class1'),
+(3,'class2'),
+(2,'class2'),
+(4,'class3'),
+(2,'class1'),
+(3,'class5'),
+(2,'class1'),
+(2,'class2'),
+(2,'class3');
+Select * from Enrolled;
+
+
+select s.Sname 
+from Student s, Class c, Enrolled e, Faculty f
+where f.Fname='Rakesh' and f.Fid=c.Fid and c.Cname=e.Cname and e.Snum=s.Snum and 
+s.Level='Jr';
+
+select max(age) as Max_Age
+from Student s,Class c,Enrolled e,Faculty f 
+where f.Fid=c.Fid and c.Cname=e.Cname and e.Snum=s.Snum and(Major='History' OR f.Fname='Ravi');
+
+select Distinct S.Sname from Student S where S.Snum in
+(Select E1.Snum 
+from Enrolled E1,Enrolled E2,Class C1,Class C2 
+where E1.Cname=C1.Cname and E2.Cname=C2.Cname and E1.Snum=E2.Snum and
+E1.Cname<>E2.Cname and C1.Meets_at=C2.Meets_at);
+
+Select Distinct F.Fname , count(*) as CourseCount 
+from CLass C , Faculty F 
+where C.Fid = F.Fid and C.FID not in (Select Fid 
+from Class
+where Room IN (Select Room 
+from Class where Room != 'r1'))
+group by F.Fname;
+
+select Level, avg(Age) as Avg_age
+from Student
+group by Level;
